@@ -10,8 +10,18 @@ export const ExperienceSection = () => {
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "Present";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", { year: "numeric", month: "short" });
+    
+    // Parse the date string (expected format: YYYY-MM or YYYY-MM-DD)
+    const parts = dateString.split('-');
+    const year = parts[0];
+    const month = parts[1] ? parseInt(parts[1], 10) : 1;
+    
+    const monthNames = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+    
+    return `${monthNames[month - 1]} ${year}`;
   };
 
   return (
