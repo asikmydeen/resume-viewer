@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,7 +29,7 @@ export const Navigation = () => {
     { label: "Skills", id: "skills" },
     { label: "Projects", id: "projects" },
     { label: "Experience", id: "experience" },
-    { label: "Testimonials", id: "testimonials" },
+    { label: "Blog", id: "blog" },
     { label: "Contact", id: "contact" },
   ];
 
@@ -50,8 +51,8 @@ export const Navigation = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+          <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-baseline space-x-4">
               {navItems.map((item) => (
                 <button
                   key={item.id}
@@ -62,10 +63,12 @@ export const Navigation = () => {
                 </button>
               ))}
             </div>
+            <ThemeToggle />
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="icon"

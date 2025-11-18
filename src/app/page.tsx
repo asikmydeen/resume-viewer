@@ -7,7 +7,10 @@ import { SkillsSection } from "@/components/skills-section";
 import { ProjectsSection } from "@/components/projects-section";
 import { ExperienceSection } from "@/components/experience-section";
 import { TestimonialsSection } from "@/components/testimonials-section";
+import { BlogSection } from "@/components/blog-section";
+import { NewsletterSection } from "@/components/newsletter-section";
 import { ContactSection } from "@/components/contact-section";
+import { Footer } from "@/components/footer";
 
 export default function Home() {
   return (
@@ -20,7 +23,10 @@ export default function Home() {
       <ProjectsSection />
       <ExperienceSection />
       <TestimonialsSection />
+      <BlogSection />
+      <NewsletterSection />
       <ContactSection />
+      <Footer />
       <MadeWithDyad />
     </div>
   );
