@@ -2,15 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Github, Linkedin, Twitter, Mail, Heart } from "lucide-react";
-import { useState, useEffect } from "react";
 
 export const Footer = () => {
-  const [year, setYear] = useState("2024");
-
-  useEffect(() => {
-    setYear(new Date().getFullYear().toString());
-  }, []);
-
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ behavior: "smooth" });
@@ -118,7 +111,7 @@ export const Footer = () => {
         <div className="pt-8 border-t">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © {year} YourName. All rights reserved.
+              © <span suppressHydrationWarning>{new Date().getFullYear()}</span> YourName. All rights reserved.
             </p>
             <p className="text-sm text-muted-foreground flex items-center gap-1">
               Made with <Heart className="h-4 w-4 text-red-500 fill-red-500" /> using Next.js
