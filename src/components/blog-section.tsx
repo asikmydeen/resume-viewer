@@ -10,7 +10,7 @@ export const BlogSection = () => {
     {
       title: "Building Scalable Web Applications with Next.js",
       excerpt: "Learn how to build performant and scalable web applications using Next.js 14 and the App Router.",
-      date: "2024-01-15",
+      date: "Jan 15, 2024",
       readTime: "8 min read",
       category: "Web Development",
       slug: "#",
@@ -18,7 +18,7 @@ export const BlogSection = () => {
     {
       title: "Mastering TypeScript: Advanced Patterns",
       excerpt: "Dive deep into advanced TypeScript patterns and techniques to write more maintainable code.",
-      date: "2024-01-10",
+      date: "Jan 10, 2024",
       readTime: "12 min read",
       category: "TypeScript",
       slug: "#",
@@ -26,7 +26,7 @@ export const BlogSection = () => {
     {
       title: "The Future of Frontend Development",
       excerpt: "Exploring emerging trends and technologies shaping the future of frontend development.",
-      date: "2024-01-05",
+      date: "Jan 5, 2024",
       readTime: "6 min read",
       category: "Industry Trends",
       slug: "#",
@@ -59,11 +59,7 @@ export const BlogSection = () => {
                 <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    {new Date(post.date).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric', 
-                      year: 'numeric' 
-                    })}
+                    {post.date}
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
