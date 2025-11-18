@@ -2,8 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
+import { useResume } from "@/lib/resume-context";
 
 export const HeroSection = () => {
+  const { resume } = useResume();
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ behavior: "smooth" });
@@ -14,16 +17,15 @@ export const HeroSection = () => {
       <div className="max-w-4xl mx-auto text-center space-y-8">
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
-            Hi, I'm <span className="text-primary">Your Name</span>
+            Hi, I'm <span className="text-primary">{resume.basics.name}</span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground">
-            Full Stack Developer | Designer | Problem Solver
+            {resume.basics.label}
           </p>
         </div>
         
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200">
-          I build exceptional digital experiences that make people's lives easier.
-          Passionate about creating elegant solutions to complex problems.
+          {resume.basics.summary}
         </p>
 
         <div className="flex gap-4 justify-center animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">

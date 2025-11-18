@@ -1,3 +1,5 @@
+"use client";
+
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Navigation } from "@/components/navigation";
 import { HeroSection } from "@/components/hero-section";
@@ -11,23 +13,37 @@ import { BlogSection } from "@/components/blog-section";
 import { NewsletterSection } from "@/components/newsletter-section";
 import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
+import { EditModeToggle } from "@/components/edit-mode-toggle";
+import { ResumeEditor } from "@/components/resume-editor";
+import { useState } from "react";
 
 export default function Home() {
+  const [isEditing, setIsEditing] = useState(false);
+
   return (
     <div className="min-h-screen">
-      <Navigation />
-      <HeroSection />
-      <AboutSection />
-      <StatsSection />
-      <SkillsSection />
-      <ProjectsSection />
-      <ExperienceSection />
-      <TestimonialsSection />
-      <BlogSection />
-      <NewsletterSection />
-      <ContactSection />
-      <Footer />
-      <MadeWithDyad />
+      {isEditing ? (
+        <div className="container mx-auto py-8 px-4">
+          <ResumeEditor />
+        </div>
+      ) : (
+        <>
+          <Navigation />
+          <HeroSection />
+          <AboutSection />
+          <StatsSection />
+          <SkillsSection />
+          <ProjectsSection />
+          <ExperienceSection />
+          <TestimonialsSection />
+          <BlogSection />
+          <NewsletterSection />
+          <ContactSection />
+          <Footer />
+          <MadeWithDyad />
+        </>
+      )}
+      <EditModeToggle onToggle={setIsEditing} />
     </div>
   );
 }

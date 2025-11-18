@@ -3,8 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { Github, Linkedin, Twitter, Mail, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useResume } from "@/lib/resume-context";
 
 export const Footer = () => {
+  const { resume } = useResume();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -31,12 +33,13 @@ export const Footer = () => {
     ],
   };
 
-  const socialLinks = [
-    { icon: Github, label: "GitHub", url: "https://github.com" },
-    { icon: Linkedin, label: "LinkedIn", url: "https://linkedin.com" },
-    { icon: Twitter, label: "Twitter", url: "https://twitter.com" },
-    { icon: Mail, label: "Email", url: "mailto:your.email@example.com" },
-  ];
+  const getIconForNetwork = (network: string) => {
+    const networkLower = network.toLowerCase();
+    if (networkLower.includes("github")) return Github;
+    if (networkLower.includes("linkedin")) return Linkedin;
+    if (networkLower.includes("twitter")) return Twitter;
+    return Mail;
+  };
 
   return (
     <footer className="bg-secondary/5 border-t">
@@ -44,28 +47,31 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand Section */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold text-primary">YourName</h3>
+            <h3 className="text-xl font-bold text-primary">{resume.basics.name}</h3>
             <p className="text-sm text-muted-foreground">
-              Full Stack Developer passionate about creating beautiful and functional web experiences.
+              {resume.basics.label}
             </p>
             <div className="flex gap-2">
-              {socialLinks.map((social) => (
-                <Button
-                  key={social.label}
-                  variant="outline"
-                  size="icon"
-                  asChild
-                >
-                  <a
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={social.label}
+              {resume.basics.profiles.map((profile) => {
+                const Icon = getIconForNetwork(profile.network);
+                return (
+                  <Button
+                    key={profile.network}
+                    variant="outline"
+                    size="icon"
+                    asChild
                   >
-                    <social.icon className="h-4 w-4" />
-                  </a>
-                </Button>
-              ))}
+                    <a
+                      href={profile.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={profile.network}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </a>
+                  </Button>
+                );
+              })}
             </div>
           </div>
 
@@ -107,9 +113,9 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Get In Touch</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>San Francisco, CA</li>
-              <li>your.email@example.com</li>
-              <li>+1 (555) 123-4567</li>
+              <li>{resume.basics.location.city}, {resume.basics.location.region}</li>
+              <li>{resume.basics.email}</li>
+              <li>{resume.basics.phone}</li>
             </ul>
           </div>
         </div>
@@ -118,7 +124,7 @@ export const Footer = () => {
         <div className="pt-8 border-t">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © {mounted ? new Date().getFullYear() : "2025"} YourName. All rights reserved.
+              © {mounted ? new Date().getFullYear() : "2025"} {resume.basics.name}. All rights reserved.
             </p>
             <p className="text-sm text-muted-foreground flex items-center gap-1">
               Made with <Heart className="h-4 w-4 text-red-500 fill-red-500" /> using Next.js

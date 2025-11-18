@@ -2,22 +2,10 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useResume } from "@/lib/resume-context";
 
 export const SkillsSection = () => {
-  const skillCategories = [
-    {
-      title: "Frontend",
-      skills: ["React", "Next.js", "TypeScript", "Tailwind CSS", "HTML/CSS"],
-    },
-    {
-      title: "Backend",
-      skills: ["Node.js", "Express", "PostgreSQL", "MongoDB", "REST APIs"],
-    },
-    {
-      title: "Tools & Others",
-      skills: ["Git", "Docker", "AWS", "CI/CD", "Agile"],
-    },
-  ];
+  const { resume } = useResume();
 
   return (
     <section id="skills" className="py-20 px-4 bg-secondary/5">
@@ -25,14 +13,14 @@ export const SkillsSection = () => {
         <h2 className="text-4xl font-bold text-center mb-12">Skills & Technologies</h2>
         
         <div className="grid md:grid-cols-3 gap-6">
-          {skillCategories.map((category) => (
-            <Card key={category.title}>
+          {resume.skills.map((skillCategory, index) => (
+            <Card key={index}>
               <CardHeader>
-                <CardTitle className="text-xl">{category.title}</CardTitle>
+                <CardTitle className="text-xl">{skillCategory.name}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {category.skills.map((skill) => (
+                  {skillCategory.keywords.map((skill) => (
                     <Badge key={skill} variant="secondary" className="text-sm">
                       {skill}
                     </Badge>

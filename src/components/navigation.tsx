@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useResume } from "@/lib/resume-context";
 
 export const Navigation = () => {
+  const { resume } = useResume();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -46,7 +48,7 @@ export const Navigation = () => {
               onClick={() => scrollToSection("hero")}
               className="text-xl font-bold text-primary hover:text-primary/80 transition-colors"
             >
-              YourName
+              {resume.basics.name.split(" ")[0]}
             </button>
           </div>
 

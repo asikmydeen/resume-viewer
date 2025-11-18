@@ -7,8 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Github, Linkedin, Mail, Twitter } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useResume } from "@/lib/resume-context";
 
 export const ContactSection = () => {
+  const { resume } = useResume();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,12 +23,13 @@ export const ContactSection = () => {
     setFormData({ name: "", email: "", message: "" });
   };
 
-  const socialLinks = [
-    { icon: Github, label: "GitHub", url: "https://github.com" },
-    { icon: Linkedin, label: "LinkedIn", url: "https://linkedin.com" },
-    { icon: Twitter, label: "Twitter", url: "https://twitter.com" },
-    { icon: Mail, label: "Email", url: "mailto:your.email@example.com" },
-  ];
+  const getIconForNetwork = (network: string) => {
+    const networkLower = network.toLowerCase();
+    if (networkLower.includes("github")) return Github;
+    if (networkLower.includes("linkedin")) return Linkedin;
+    if (networkLower.includes("twitter")) return Twitter;
+    return Mail;
+  };
 
   return (
     <section id="contact" className="py-20 px-4 bg-secondary/5">
@@ -46,23 +49,26 @@ export const ContactSection = () => {
             <div className="space-y-4">
               <h4 className="font-semibold">Find me on</h4>
               <div className="flex gap-3">
-                {socialLinks.map((social) => (
-                  <Button
-                    key={social.label}
-                    variant="outline"
-                    size="icon"
-                    asChild
-                  >
-                    <a
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={social.label}
+                {resume.basics.profiles.map((profile) => {
+                  const Icon = getIconForNetwork(profile.network);
+                  return (
+                    <Button
+                      key={profile.network}
+                      variant="outline"
+                      size="icon"
+                      asChild
                     >
-                      <social.icon className="h-5 w-5" />
-                    </a>
-                  </Button>
-                ))}
+                      <a
+                        href={profile.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={profile.network}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </a>
+                    </Button>
+                  );
+                })}
               </div>
             </div>
           </div>

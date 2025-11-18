@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ResumeProvider } from "@/lib/resume-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Your Name - Portfolio",
-  description: "Full Stack Developer | Designer | Problem Solver",
+  title: "Portfolio - JSON Resume",
+  description: "Dynamic portfolio powered by JSON Resume",
 };
 
 export default function RootLayout({
@@ -35,7 +36,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <ResumeProvider>
+            {children}
+          </ResumeProvider>
           <Toaster />
         </ThemeProvider>
       </body>
