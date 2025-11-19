@@ -28,9 +28,15 @@ export const Footer = () => {
     resources: [
       { label: "Skills", id: "skills" },
       { label: "Experience", id: "experience" },
-      { label: "Testimonials", id: "testimonials" },
+      { label: "Awards", id: "awards", show: resume.awards.length > 0 },
+      { label: "Publications", id: "publications", show: resume.publications.length > 0 },
+    ].filter(item => item.show !== false),
+    more: [
+      { label: "Languages", id: "languages", show: resume.languages.length > 0 },
+      { label: "Interests", id: "interests", show: resume.interests.length > 0 },
+      { label: "Testimonials", id: "testimonials", show: resume.references.length > 0 },
       { label: "Contact", id: "contact" },
-    ],
+    ].filter(item => item.show !== false),
   };
 
   const getIconForNetwork = (network: string) => {
@@ -109,13 +115,20 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* Contact Info */}
+          {/* More Links */}
           <div>
-            <h4 className="font-semibold mb-4">Get In Touch</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>{resume.basics.location.city}, {resume.basics.location.region}</li>
-              <li>{resume.basics.email}</li>
-              <li>{resume.basics.phone}</li>
+            <h4 className="font-semibold mb-4">More</h4>
+            <ul className="space-y-2">
+              {footerLinks.more.map((link) => (
+                <li key={link.id}>
+                  <button
+                    onClick={() => scrollToSection(link.id)}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </button>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

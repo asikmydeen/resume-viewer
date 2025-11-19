@@ -31,9 +31,13 @@ export const Navigation = () => {
     { label: "Skills", id: "skills" },
     { label: "Projects", id: "projects" },
     { label: "Experience", id: "experience" },
+    { label: "Awards", id: "awards", show: resume.awards.length > 0 },
+    { label: "Publications", id: "publications", show: resume.publications.length > 0 },
+    { label: "Languages", id: "languages", show: resume.languages.length > 0 },
+    { label: "Interests", id: "interests", show: resume.interests.length > 0 },
     { label: "Blog", id: "blog" },
     { label: "Contact", id: "contact" },
-  ];
+  ].filter(item => item.show !== false);
 
   return (
     <nav

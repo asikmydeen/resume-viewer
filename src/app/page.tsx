@@ -8,6 +8,10 @@ import { StatsSection } from "@/components/stats-section";
 import { SkillsSection } from "@/components/skills-section";
 import { ProjectsSection } from "@/components/projects-section";
 import { ExperienceSection } from "@/components/experience-section";
+import { AwardsSection } from "@/components/awards-section";
+import { PublicationsSection } from "@/components/publications-section";
+import { LanguagesSection } from "@/components/languages-section";
+import { InterestsSection } from "@/components/interests-section";
 import { TestimonialsSection } from "@/components/testimonials-section";
 import { BlogSection } from "@/components/blog-section";
 import { NewsletterSection } from "@/components/newsletter-section";
@@ -35,6 +39,10 @@ export default function Home() {
           <SkillsSection />
           <ProjectsSection />
           <ExperienceSection />
+          <AwardsSection />
+          <PublicationsSection />
+          <LanguagesSection />
+          <InterestsSection />
           <TestimonialsSection />
           <BlogSection />
           <NewsletterSection />
