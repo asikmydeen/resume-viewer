@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useResume } from "@/lib/resume-context";
 import { Upload, Download, RotateCcw, Save, Plus, Trash2, Shuffle } from "lucide-react";
 import { toast } from "sonner";
@@ -139,6 +140,24 @@ export function ResumeEditor() {
 
   const removeProject = (index: number) => {
     setEditedResume({ ...editedResume, projects: editedResume.projects.filter((_, i) => i !== index) });
+  };
+
+  // Vibe Projects handlers
+  const addVibeProject = () => {
+    setEditedResume({
+      ...editedResume,
+      vibeProjects: [...(editedResume.vibeProjects || []), { name: "", description: "", status: "Inflight", tools: [] }],
+    });
+  };
+
+  const updateVibeProject = (index: number, field: string, value: any) => {
+    const newVibeProjects = [...(editedResume.vibeProjects || [])];
+    newVibeProjects[index] = { ...newVibeProjects[index], [field]: value };
+    setEditedResume({ ...editedResume, vibeProjects: newVibeProjects });
+  };
+
+  const removeVibeProject = (index: number) => {
+    setEditedResume({ ...editedResume, vibeProjects: (editedResume.vibeProjects || []).filter((_, i) => i !== index) });
   };
 
   // Awards handlers
@@ -280,6 +299,7 @@ export function ResumeEditor() {
                 <TabsTrigger value="education" className="flex-shrink-0">Education</TabsTrigger>
                 <TabsTrigger value="skills" className="flex-shrink-0">Skills</TabsTrigger>
                 <TabsTrigger value="projects" className="flex-shrink-0">Projects</TabsTrigger>
+                <TabsTrigger value="vibe" className="flex-shrink-0">Vibe Coding</TabsTrigger>
                 <TabsTrigger value="awards" className="flex-shrink-0">Awards</TabsTrigger>
                 <TabsTrigger value="publications" className="flex-shrink-0">Publications</TabsTrigger>
                 <TabsTrigger value="languages" className="flex-shrink-0">Languages</TabsTrigger>
@@ -677,6 +697,70 @@ export function ResumeEditor() {
                         onChange={(e) => updateProject(index, "highlights", e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
                         rows={2}
                         placeholder="Increased performance by 50%, Reduced costs by 30%"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
+
+            {/* Vibe Projects Tab Content */}
+            <TabsContent value="vibe" className="space-y-6 mt-0">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Vibe Coding Projects</h3>
+                <Button onClick={addVibeProject} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Vibe Project
+                </Button>
+              </div>
+              {(editedResume.vibeProjects || []).map((project, index) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-base">Vibe Project {index + 1}</CardTitle>
+                      <Button variant="destructive" size="sm" onClick={() => removeVibeProject(index)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label>Project Name</Label>
+                        <Input value={project.name} onChange={(e) => updateVibeProject(index, "name", e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Status</Label>
+                        <Select value={project.status} onValueChange={(value) => updateVibeProject(index, "status", value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Inflight">Inflight</SelectItem>
+                            <SelectItem value="Completed">Completed</SelectItem>
+                            <SelectItem value="Ideation">Ideation</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Vibe</Label>
+                        <Input value={project.vibe || ""} onChange={(e) => updateVibeProject(index, "vibe", e.target.value)} placeholder="Chill, Chaotic, etc." />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>URL</Label>
+                        <Input value={project.url || ""} onChange={(e) => updateVibeProject(index, "url", e.target.value)} placeholder="https://..." />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea value={project.description} onChange={(e) => updateVibeProject(index, "description", e.target.value)} rows={3} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Tools (comma-separated)</Label>
+                      <Input
+                        value={project.tools?.join(", ") || ""}
+                        onChange={(e) => updateVibeProject(index, "tools", e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
+                        placeholder="OpenAI, Python, etc."
                       />
                     </div>
                   </CardContent>

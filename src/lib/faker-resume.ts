@@ -71,6 +71,20 @@ export function generateFakeResume(): Resume {
     };
   });
 
+  // Generate Vibe Projects
+  const vibeProjectsCount = faker.number.int({ min: 2, max: 4 });
+  const vibeProjects = Array.from({ length: vibeProjectsCount }, () => ({
+    name: faker.helpers.arrayElement([
+      'AI Jazz Composer', 'Vibe Checker 3000', 'Dream Weaver Bot', 'Chaos Monkey GPT', 
+      'Neural Style Transfer-er', 'Prompt Engineer Assistant', 'Code Poet'
+    ]),
+    description: faker.lorem.sentence(),
+    status: faker.helpers.arrayElement(['Inflight', 'Completed', 'Ideation'] as const),
+    vibe: faker.helpers.arrayElement(['Chill', 'Chaotic', 'Futuristic', 'Retro', 'Cyberpunk', 'Zen']),
+    tools: faker.helpers.arrayElements(['OpenAI', 'LangChain', 'Vercel AI SDK', 'Midjourney', 'Stable Diffusion', 'Python', 'Next.js'], 3),
+    url: faker.internet.url(),
+  }));
+
   // Generate 1-3 education entries
   const education = Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, () => {
     const studyType = faker.helpers.arrayElement(["Bachelor's", "Master's", "PhD", "Associate"]);
@@ -166,6 +180,7 @@ export function generateFakeResume(): Resume {
     education,
     skills,
     projects,
+    vibeProjects,
     awards,
     publications,
     languages,

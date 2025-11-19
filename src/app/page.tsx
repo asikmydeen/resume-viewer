@@ -7,6 +7,7 @@ import { AboutSection } from "@/components/about-section";
 import { StatsSection } from "@/components/stats-section";
 import { SkillsSection } from "@/components/skills-section";
 import { ProjectsSection } from "@/components/projects-section";
+import { VibeProjectsSection } from "@/components/vibe-projects-section";
 import { ExperienceSection } from "@/components/experience-section";
 import { AwardsSection } from "@/components/awards-section";
 import { PublicationsSection } from "@/components/publications-section";
@@ -38,6 +39,7 @@ export default function Home() {
           <StatsSection />
           <SkillsSection />
           <ProjectsSection />
+          <VibeProjectsSection />
           <ExperienceSection />
           <AwardsSection />
           <PublicationsSection />

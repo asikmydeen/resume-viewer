@@ -30,6 +30,7 @@ export const Navigation = () => {
     { label: "About", id: "about" },
     { label: "Skills", id: "skills" },
     { label: "Projects", id: "projects" },
+    { label: "Vibe Coding", id: "vibe-coding", show: resume.vibeProjects && resume.vibeProjects.length > 0 },
     { label: "Experience", id: "experience" },
     { label: "Awards", id: "awards", show: resume.awards.length > 0 },
     { label: "Publications", id: "publications", show: resume.publications.length > 0 },

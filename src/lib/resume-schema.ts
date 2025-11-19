@@ -63,6 +63,15 @@ export const resumeSchema = z.object({
     entity: z.string().optional(),
     type: z.string().optional(),
   })).default([]),
+  // New Vibe Coding Projects Section
+  vibeProjects: z.array(z.object({
+    name: z.string(),
+    description: z.string(),
+    status: z.enum(["Inflight", "Completed", "Ideation"]).default("Inflight"),
+    vibe: z.string().optional(), // e.g. "Chill", "Chaotic", "Hyper-optimized"
+    tools: z.array(z.string()).default([]),
+    url: z.string().url().optional(),
+  })).default([]),
   awards: z.array(z.object({
     title: z.string(),
     date: z.string().optional(),
@@ -164,6 +173,7 @@ export const defaultResume: Resume = {
       url: "https://example.com",
     },
   ],
+  vibeProjects: [],
   awards: [],
   publications: [],
   languages: [],
