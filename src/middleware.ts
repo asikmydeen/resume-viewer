@@ -1,14 +1,6 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 
-const isPublicRoute = createRouteMatcher([
-  "/", 
-  "/sign-in(.*)", 
-  "/sign-up(.*)", 
-  "/api/public(.*)"
-]);
-
-export default clerkMiddleware(async (auth, req) => {
+export async function middleware(req: NextRequest) {
   const url = req.nextUrl;
   const hostname = req.headers.get("host") || "";
   
@@ -24,22 +16,43 @@ export default clerkMiddleware(async (auth, req) => {
     hostname.includes(".") &&
     !hostname.includes("www") &&
     (process.env.NEXT_PUBLIC_ROOT_DOMAIN ? hostname.endsWith(process.env.NEXT_PUBLIC_ROOT_DOMAIN) : true) &&
-    currentHost !== "ceve.info" // explicit check for root domain
+    currentHost !== "ceve.info" && // explicit check for root domain
+    currentHost !== hostname // not the full hostname
   ) {
     // Rewrite to the public profile view
     return NextResponse.rewrite(new URL(`/u/${currentHost}${url.pathname}`, req.url));
   }
 
-  // If Clerk is not configured, just continue
+  // If Clerk is not configured, just continue without auth
   if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || !process.env.CLERK_SECRET_KEY) {
     return NextResponse.next();
   }
 
-  // Protect non-public routes
-  if (!isPublicRoute(req)) {
-    await auth.protect();
+  // Only use Clerk middleware if it's configured
+  try {
+    const { clerkMiddleware, createRouteMatcher } = await import("@clerk/nextjs/server");
+    
+    const isPublicRoute = createRouteMatcher([
+      "/", 
+      "/sign-in(.*)", 
+      "/sign-up(.*)", 
+      "/api/public(.*)",
+      "/u/(.*)"
+    ]);
+
+    const clerkHandler = clerkMiddleware(async (auth, request) => {
+      // Protect non-public routes
+      if (!isPublicRoute(request)) {
+        await auth.protect();
+      }
+    });
+
+    return clerkHandler(req, {} as any);
+  } catch (error) {
+    console.error('Clerk middleware error:', error);
+    return NextResponse.next();
   }
-});
+}
 
 export const config = {
   matcher: [
