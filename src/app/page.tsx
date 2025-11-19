@@ -20,13 +20,45 @@ import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
 import { EditModeToggle } from "@/components/edit-mode-toggle";
 import { ResumeEditor } from "@/components/resume-editor";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useUser, SignInButton, UserButton } from "@clerk/nextjs";
+import { useResume } from "@/lib/resume-context";
+import { OnboardingModal } from "@/components/onboarding-modal";
+import { Button } from "@/components/ui/button";
+import { LogIn } from "lucide-react";
 
 export default function Home() {
   const [isEditing, setIsEditing] = useState(false);
+  const { isSignedIn, isLoaded } = useUser();
+  const { username, setUsername, isLoaded: isDataLoaded } = useUserResumeHook();
+  
+  // Helper hook usage
+  function useUserResumeHook() {
+     return useResume();
+  }
+
+  const showOnboarding = isSignedIn && isDataLoaded && !username;
 
   return (
     <div className="min-h-screen">
+      {/* Auth Header Overlay for Main Page */}
+      <div className="fixed top-4 right-4 z-[60] flex gap-2">
+        {!isSignedIn && (
+           <SignInButton mode="modal">
+             <Button variant="default" size="sm" className="shadow-lg">
+               <LogIn className="w-4 h-4 mr-2" />
+               Login to Save
+             </Button>
+           </SignInButton>
+        )}
+        {isSignedIn && <UserButton afterSignOutUrl="/" />}
+      </div>
+
+      <OnboardingModal 
+        isOpen={!!showOnboarding} 
+        onComplete={(newUsername) => setUsername(newUsername)} 
+      />
+
       {isEditing ? (
         <div className="container mx-auto py-8 px-4">
           <ResumeEditor />
@@ -53,6 +85,8 @@ export default function Home() {
           <MadeWithDyad />
         </>
       )}
+      
+      {/* Only allow editing if logged in, or show it but it won't save to cloud */}
       <EditModeToggle onToggle={setIsEditing} />
     </div>
   );

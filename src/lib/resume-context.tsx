@@ -3,6 +3,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Resume, defaultResume } from "@/lib/resume-schema";
 import { generateFakeResume } from "@/lib/faker-resume";
+import { useUser } from "@clerk/nextjs";
+import { saveResume, getUserResume, getUsername } from "@/lib/actions";
+import { toast } from "sonner";
 
 interface ResumeContextType {
   resume: Resume;
@@ -11,17 +14,55 @@ interface ResumeContextType {
   autoRefresh: boolean;
   setAutoRefresh: (value: boolean) => void;
   generateRandom: () => void;
+  isSaving: boolean;
+  username: string | null;
+  setUsername: (name: string) => void;
+  isLoaded: boolean;
 }
 
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
 
 export function ResumeProvider({ children }: { children: React.ReactNode }) {
+  const { isSignedIn, isLoaded: isAuthLoaded } = useUser();
   const [resume, setResume] = useState<Resume>(defaultResume);
-  const [autoRefresh, setAutoRefresh] = useState(true); // Changed to true by default
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
-  // Load resume from localStorage on mount, or generate random if none exists
+  // Initial Load Logic
   useEffect(() => {
+    if (!isAuthLoaded) return;
+
+    const init = async () => {
+      if (isSignedIn) {
+        // If logged in, try to fetch from DB
+        const [dbResume, dbUsername] = await Promise.all([
+          getUserResume(),
+          getUsername()
+        ]);
+
+        if (dbUsername) setUsername(dbUsername);
+
+        if (dbResume) {
+          setResume(dbResume);
+          // Disable auto-refresh if they have real data
+          setAutoRefresh(false); 
+        } else {
+          // Logged in but no data yet? Use local or random
+          loadFromLocalOrRandom();
+        }
+      } else {
+        // Not logged in
+        loadFromLocalOrRandom();
+      }
+      setDataLoaded(true);
+    };
+
+    init();
+  }, [isSignedIn, isAuthLoaded]);
+
+  const loadFromLocalOrRandom = () => {
     const stored = localStorage.getItem("resume");
     const autoRefreshStored = localStorage.getItem("autoRefresh");
     
@@ -29,65 +70,72 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
       try {
         setResume(JSON.parse(stored));
       } catch (error) {
-        console.error("Failed to parse stored resume:", error);
-        // If parsing fails, generate random data
         const newResume = generateFakeResume();
         setResume(newResume);
-        localStorage.setItem("resume", JSON.stringify(newResume));
       }
     } else {
-      // No stored resume, generate random data on first load
       const newResume = generateFakeResume();
       setResume(newResume);
-      localStorage.setItem("resume", JSON.stringify(newResume));
     }
     
-    // Set auto-refresh preference (default to true if not set)
-    if (autoRefreshStored === "false") {
-      setAutoRefresh(false);
-    } else {
-      setAutoRefresh(true);
-      localStorage.setItem("autoRefresh", "true");
-    }
-    
-    setIsInitialized(true);
-  }, []);
+    if (autoRefreshStored === "false") setAutoRefresh(false);
+  };
 
-  // Auto-refresh every 5 minutes (300000ms) when enabled
+  // Auto-refresh logic (Only if NOT saved to DB/Signed In usually, but keeping for demo mode)
   useEffect(() => {
-    if (!autoRefresh || !isInitialized) return;
+    if (!autoRefresh || !dataLoaded || (isSignedIn && username)) return; // Don't auto-refresh if user has a profile claimed
 
     const interval = setInterval(() => {
       const newResume = generateFakeResume();
       setResume(newResume);
-      localStorage.setItem("resume", JSON.stringify(newResume));
-    }, 300000); // 5 minutes = 300000ms
+      if (!isSignedIn) {
+         localStorage.setItem("resume", JSON.stringify(newResume));
+      }
+    }, 300000);
 
     return () => clearInterval(interval);
-  }, [autoRefresh, isInitialized]);
+  }, [autoRefresh, dataLoaded, isSignedIn, username]);
 
-  const updateResume = (newResume: Resume) => {
+  const updateResume = async (newResume: Resume) => {
     setResume(newResume);
-    localStorage.setItem("resume", JSON.stringify(newResume));
+    
+    if (isSignedIn) {
+      setIsSaving(true);
+      const result = await saveResume(newResume);
+      setIsSaving(false);
+      if (result.error) {
+        toast.error("Failed to save to cloud");
+      } else {
+        // toast.success("Saved to cloud"); // Optional: can be noisy
+      }
+    } else {
+      localStorage.setItem("resume", JSON.stringify(newResume));
+    }
   };
 
   const resetResume = () => {
     setResume(defaultResume);
-    localStorage.removeItem("resume");
+    if (!isSignedIn) localStorage.removeItem("resume");
   };
 
   const generateRandom = () => {
     const newResume = generateFakeResume();
-    setResume(newResume);
-    localStorage.setItem("resume", JSON.stringify(newResume));
+    updateResume(newResume);
   };
 
-  useEffect(() => {
-    localStorage.setItem("autoRefresh", autoRefresh.toString());
-  }, [autoRefresh]);
-
   return (
-    <ResumeContext.Provider value={{ resume, updateResume, resetResume, autoRefresh, setAutoRefresh, generateRandom }}>
+    <ResumeContext.Provider value={{ 
+      resume, 
+      updateResume, 
+      resetResume, 
+      autoRefresh, 
+      setAutoRefresh, 
+      generateRandom,
+      isSaving,
+      username,
+      setUsername,
+      isLoaded: dataLoaded
+    }}>
       {children}
     </ResumeContext.Provider>
   );
