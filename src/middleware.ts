@@ -8,7 +8,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/public(.*)"
 ]);
 
-export default function middleware(req: NextRequest) {
+export default clerkMiddleware(async (auth, req) => {
   const url = req.nextUrl;
   const hostname = req.headers.get("host") || "";
   
@@ -30,18 +30,16 @@ export default function middleware(req: NextRequest) {
     return NextResponse.rewrite(new URL(`/u/${currentHost}${url.pathname}`, req.url));
   }
 
-  // If Clerk is not configured, skip auth middleware
+  // If Clerk is not configured, just continue
   if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || !process.env.CLERK_SECRET_KEY) {
     return NextResponse.next();
   }
 
-  // Use Clerk middleware if configured (v6 API)
-  return clerkMiddleware(async (auth, req) => {
-    if (!isPublicRoute(req)) {
-      await auth.protect();
-    }
-  })(req);
-}
+  // Protect non-public routes
+  if (!isPublicRoute(req)) {
+    await auth().protect();
+  }
+});
 
 export const config = {
   matcher: [
