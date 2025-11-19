@@ -1,5 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
   "/", 
@@ -8,7 +8,8 @@ const isPublicRoute = createRouteMatcher([
   "/api/public(.*)"
 ]);
 
-export default clerkMiddleware(async (auth, req) => {
+// Explicitly typing auth as any to prevent TS error if types are missing during install
+export default clerkMiddleware(async (auth: any, req: NextRequest) => {
   const url = req.nextUrl;
   const hostname = req.headers.get("host") || "";
   
