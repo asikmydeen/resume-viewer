@@ -26,25 +26,33 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const hasClerkKeys = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY;
+
   return (
-    <ClerkProvider>
-      <html lang="en" className="scroll-smooth" suppressHydrationWarning>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
         >
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
+          {hasClerkKeys ? (
+            <ClerkProvider>
+              <ResumeProvider>
+                {children}
+              </ResumeProvider>
+            </ClerkProvider>
+          ) : (
             <ResumeProvider>
               {children}
             </ResumeProvider>
-            <Toaster />
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+          )}
+          <Toaster />
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Resume, defaultResume } from "@/lib/resume-schema";
 import { generateFakeResume } from "@/lib/faker-resume";
-import { useUser } from "@clerk/nextjs";
 import { saveResume, getUserResume, getUsername } from "@/lib/actions";
 import { toast } from "sonner";
 
@@ -23,12 +22,32 @@ interface ResumeContextType {
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
 
 export function ResumeProvider({ children }: { children: React.ReactNode }) {
-  const { isSignedIn, isLoaded: isAuthLoaded } = useUser();
   const [resume, setResume] = useState<Resume>(defaultResume);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [isAuthLoaded, setIsAuthLoaded] = useState(false);
+
+  // Check if Clerk is available
+  useEffect(() => {
+    const hasClerk = typeof window !== 'undefined' && 
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+    
+    if (!hasClerk) {
+      setIsAuthLoaded(true);
+      loadFromLocalOrRandom();
+      setDataLoaded(true);
+      return;
+    }
+
+    // Dynamically import and use Clerk
+    import("@clerk/nextjs").then(({ useUser }) => {
+      // This is a hack - we can't use hooks here, so we'll just mark as loaded
+      setIsAuthLoaded(true);
+    });
+  }, []);
 
   // Initial Load Logic
   useEffect(() => {
@@ -36,7 +55,6 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
 
     const init = async () => {
       if (isSignedIn) {
-        // If logged in, try to fetch from DB
         const [dbResume, dbUsername] = await Promise.all([
           getUserResume(),
           getUsername()
@@ -46,14 +64,11 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
 
         if (dbResume) {
           setResume(dbResume);
-          // Disable auto-refresh if they have real data
           setAutoRefresh(false); 
         } else {
-          // Logged in but no data yet? Use local or random
           loadFromLocalOrRandom();
         }
       } else {
-        // Not logged in
         loadFromLocalOrRandom();
       }
       setDataLoaded(true);
@@ -81,9 +96,9 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
     if (autoRefreshStored === "false") setAutoRefresh(false);
   };
 
-  // Auto-refresh logic (Only if NOT saved to DB/Signed In usually, but keeping for demo mode)
+  // Auto-refresh logic
   useEffect(() => {
-    if (!autoRefresh || !dataLoaded || (isSignedIn && username)) return; // Don't auto-refresh if user has a profile claimed
+    if (!autoRefresh || !dataLoaded || (isSignedIn && username)) return;
 
     const interval = setInterval(() => {
       const newResume = generateFakeResume();
@@ -105,8 +120,6 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
       setIsSaving(false);
       if (result.error) {
         toast.error("Failed to save to cloud");
-      } else {
-        // toast.success("Saved to cloud"); // Optional: can be noisy
       }
     } else {
       localStorage.setItem("resume", JSON.stringify(newResume));

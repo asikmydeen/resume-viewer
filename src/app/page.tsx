@@ -20,44 +20,43 @@ import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
 import { EditModeToggle } from "@/components/edit-mode-toggle";
 import { ResumeEditor } from "@/components/resume-editor";
-import { useState, useEffect } from "react";
-import { useUser, SignInButton, UserButton } from "@clerk/nextjs";
+import { useState } from "react";
 import { useResume } from "@/lib/resume-context";
 import { OnboardingModal } from "@/components/onboarding-modal";
 import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
 
+// Dynamically import Clerk components to avoid build errors
+import dynamic from "next/dynamic";
+
+const ClerkAuth = dynamic(
+  () => import("@clerk/nextjs").then((mod) => ({
+    default: ({ children }: { children: React.ReactNode }) => children,
+    useUser: mod.useUser,
+    SignInButton: mod.SignInButton,
+    UserButton: mod.UserButton,
+  })),
+  { ssr: false }
+);
+
 export default function Home() {
   const [isEditing, setIsEditing] = useState(false);
-  const { isSignedIn, isLoaded } = useUser();
-  const { username, setUsername, isLoaded: isDataLoaded } = useUserResumeHook();
+  const { username, setUsername, isLoaded: isDataLoaded } = useResume();
   
-  // Helper hook usage
-  function useUserResumeHook() {
-     return useResume();
-  }
-
-  const showOnboarding = isSignedIn && isDataLoaded && !username;
+  // Check if Clerk is configured
+  const hasClerkKeys = typeof window !== 'undefined' && 
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
   return (
     <div className="min-h-screen">
-      {/* Auth Header Overlay for Main Page */}
-      <div className="fixed top-4 right-4 z-[60] flex gap-2">
-        {!isSignedIn && (
-           <SignInButton mode="modal">
-             <Button variant="default" size="sm" className="shadow-lg">
-               <LogIn className="w-4 h-4 mr-2" />
-               Login to Save
-             </Button>
-           </SignInButton>
-        )}
-        {isSignedIn && <UserButton afterSignOutUrl="/" />}
-      </div>
+      {/* Auth Header Overlay for Main Page - Only show if Clerk is configured */}
+      {hasClerkKeys && (
+        <div className="fixed top-4 right-4 z-[60] flex gap-2">
+          <ClerkAuthButtons />
+        </div>
+      )}
 
-      <OnboardingModal 
-        isOpen={!!showOnboarding} 
-        onComplete={(newUsername) => setUsername(newUsername)} 
-      />
+      {hasClerkKeys && <OnboardingModalWrapper username={username} setUsername={setUsername} isDataLoaded={isDataLoaded} />}
 
       {isEditing ? (
         <div className="container mx-auto py-8 px-4">
@@ -86,8 +85,49 @@ export default function Home() {
         </>
       )}
       
-      {/* Only allow editing if logged in, or show it but it won't save to cloud */}
       <EditModeToggle onToggle={setIsEditing} />
     </div>
+  );
+}
+
+// Separate component for Clerk auth buttons
+function ClerkAuthButtons() {
+  const { useUser, SignInButton, UserButton } = require("@clerk/nextjs");
+  const { isSignedIn } = useUser();
+
+  return (
+    <>
+      {!isSignedIn && (
+        <SignInButton mode="modal">
+          <Button variant="default" size="sm" className="shadow-lg">
+            <LogIn className="w-4 h-4 mr-2" />
+            Login to Save
+          </Button>
+        </SignInButton>
+      )}
+      {isSignedIn && <UserButton afterSignOutUrl="/" />}
+    </>
+  );
+}
+
+// Separate component for onboarding modal
+function OnboardingModalWrapper({ 
+  username, 
+  setUsername, 
+  isDataLoaded 
+}: { 
+  username: string | null; 
+  setUsername: (name: string) => void; 
+  isDataLoaded: boolean;
+}) {
+  const { useUser } = require("@clerk/nextjs");
+  const { isSignedIn } = useUser();
+  const showOnboarding = isSignedIn && isDataLoaded && !username;
+
+  return (
+    <OnboardingModal 
+      isOpen={!!showOnboarding} 
+      onComplete={(newUsername) => setUsername(newUsername)} 
+    />
   );
 }
