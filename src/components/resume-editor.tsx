@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { useResume } from "@/lib/resume-context";
-import { Upload, Download, RotateCcw, Save } from "lucide-react";
+import { Upload, Download, RotateCcw, Save, Plus, Trash2, Shuffle } from "lucide-react";
 import { toast } from "sonner";
 import { resumeSchema } from "@/lib/resume-schema";
 
 export function ResumeEditor() {
-  const { resume, updateResume, resetResume } = useResume();
+  const { resume, updateResume, resetResume, autoRefresh, setAutoRefresh, generateRandom } = useResume();
   const [editedResume, setEditedResume] = useState(resume);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,6 +61,97 @@ export function ResumeEditor() {
     }
   };
 
+  const handleGenerateRandom = () => {
+    generateRandom();
+    setEditedResume(resume);
+    toast.success("Random resume generated!");
+  };
+
+  // Work experience handlers
+  const addWork = () => {
+    setEditedResume({
+      ...editedResume,
+      work: [
+        ...editedResume.work,
+        {
+          name: "",
+          position: "",
+          startDate: "",
+          summary: "",
+          highlights: [],
+        },
+      ],
+    });
+  };
+
+  const updateWork = (index: number, field: string, value: any) => {
+    const newWork = [...editedResume.work];
+    newWork[index] = { ...newWork[index], [field]: value };
+    setEditedResume({ ...editedResume, work: newWork });
+  };
+
+  const removeWork = (index: number) => {
+    setEditedResume({
+      ...editedResume,
+      work: editedResume.work.filter((_, i) => i !== index),
+    });
+  };
+
+  // Skills handlers
+  const addSkill = () => {
+    setEditedResume({
+      ...editedResume,
+      skills: [
+        ...editedResume.skills,
+        {
+          name: "",
+          keywords: [],
+        },
+      ],
+    });
+  };
+
+  const updateSkill = (index: number, field: string, value: any) => {
+    const newSkills = [...editedResume.skills];
+    newSkills[index] = { ...newSkills[index], [field]: value };
+    setEditedResume({ ...editedResume, skills: newSkills });
+  };
+
+  const removeSkill = (index: number) => {
+    setEditedResume({
+      ...editedResume,
+      skills: editedResume.skills.filter((_, i) => i !== index),
+    });
+  };
+
+  // Projects handlers
+  const addProject = () => {
+    setEditedResume({
+      ...editedResume,
+      projects: [
+        ...editedResume.projects,
+        {
+          name: "",
+          description: "",
+          keywords: [],
+        },
+      ],
+    });
+  };
+
+  const updateProject = (index: number, field: string, value: any) => {
+    const newProjects = [...editedResume.projects];
+    newProjects[index] = { ...newProjects[index], [field]: value };
+    setEditedResume({ ...editedResume, projects: newProjects });
+  };
+
+  const removeProject = (index: number) => {
+    setEditedResume({
+      ...editedResume,
+      projects: editedResume.projects.filter((_, i) => i !== index),
+    });
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -67,7 +159,7 @@ export function ResumeEditor() {
         <CardDescription>
           Edit your resume information or upload a JSON Resume file
         </CardDescription>
-        <div className="flex gap-2 mt-4">
+        <div className="flex flex-wrap gap-2 mt-4">
           <Button variant="outline" size="sm" onClick={() => document.getElementById("file-upload")?.click()}>
             <Upload className="h-4 w-4 mr-2" />
             Upload JSON
@@ -87,10 +179,22 @@ export function ResumeEditor() {
             <Save className="h-4 w-4 mr-2" />
             Save Changes
           </Button>
+          <Button variant="outline" size="sm" onClick={handleGenerateRandom}>
+            <Shuffle className="h-4 w-4 mr-2" />
+            Generate Random
+          </Button>
           <Button variant="outline" size="sm" onClick={handleReset}>
             <RotateCcw className="h-4 w-4 mr-2" />
             Reset
           </Button>
+          <div className="flex items-center gap-2 ml-auto">
+            <Label htmlFor="auto-refresh" className="text-sm">Auto-refresh (10s)</Label>
+            <Switch
+              id="auto-refresh"
+              checked={autoRefresh}
+              onCheckedChange={setAutoRefresh}
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -191,21 +295,170 @@ export function ResumeEditor() {
           </TabsContent>
 
           <TabsContent value="work" className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Work experience is managed through the JSON file. Upload a JSON Resume to edit work history.
-            </p>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Work Experience</h3>
+              <Button onClick={addWork} size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Work
+              </Button>
+            </div>
+            {editedResume.work.map((work, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-base">Position {index + 1}</CardTitle>
+                    <Button variant="destructive" size="sm" onClick={() => removeWork(index)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-2">
+                    <Label>Company Name</Label>
+                    <Input
+                      value={work.name}
+                      onChange={(e) => updateWork(index, "name", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Position</Label>
+                    <Input
+                      value={work.position}
+                      onChange={(e) => updateWork(index, "position", e.target.value)}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label>Start Date (YYYY-MM)</Label>
+                      <Input
+                        value={work.startDate}
+                        onChange={(e) => updateWork(index, "startDate", e.target.value)}
+                        placeholder="2022-01"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>End Date (YYYY-MM)</Label>
+                      <Input
+                        value={work.endDate || ""}
+                        onChange={(e) => updateWork(index, "endDate", e.target.value || undefined)}
+                        placeholder="Present"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Summary</Label>
+                    <Textarea
+                      value={work.summary}
+                      onChange={(e) => updateWork(index, "summary", e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Technologies (comma-separated)</Label>
+                    <Input
+                      value={work.highlights?.join(", ") || ""}
+                      onChange={(e) => updateWork(index, "highlights", e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
+                      placeholder="React, Node.js, AWS"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </TabsContent>
 
           <TabsContent value="skills" className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Skills are managed through the JSON file. Upload a JSON Resume to edit skills.
-            </p>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Skills</h3>
+              <Button onClick={addSkill} size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Skill Category
+              </Button>
+            </div>
+            {editedResume.skills.map((skill, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-base">Skill Category {index + 1}</CardTitle>
+                    <Button variant="destructive" size="sm" onClick={() => removeSkill(index)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-2">
+                    <Label>Category Name</Label>
+                    <Input
+                      value={skill.name}
+                      onChange={(e) => updateSkill(index, "name", e.target.value)}
+                      placeholder="Frontend"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Skills (comma-separated)</Label>
+                    <Input
+                      value={skill.keywords.join(", ")}
+                      onChange={(e) => updateSkill(index, "keywords", e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
+                      placeholder="React, Vue.js, Angular"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </TabsContent>
 
           <TabsContent value="projects" className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Projects are managed through the JSON file. Upload a JSON Resume to edit projects.
-            </p>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Projects</h3>
+              <Button onClick={addProject} size="sm">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Project
+              </Button>
+            </div>
+            {editedResume.projects.map((project, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-base">Project {index + 1}</CardTitle>
+                    <Button variant="destructive" size="sm" onClick={() => removeProject(index)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-2">
+                    <Label>Project Name</Label>
+                    <Input
+                      value={project.name}
+                      onChange={(e) => updateProject(index, "name", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea
+                      value={project.description}
+                      onChange={(e) => updateProject(index, "description", e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>URL</Label>
+                    <Input
+                      value={project.url || ""}
+                      onChange={(e) => updateProject(index, "url", e.target.value || undefined)}
+                      placeholder="https://example.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Technologies (comma-separated)</Label>
+                    <Input
+                      value={project.keywords.join(", ")}
+                      onChange={(e) => updateProject(index, "keywords", e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
+                      placeholder="Next.js, TypeScript, PostgreSQL"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </TabsContent>
         </Tabs>
       </CardContent>
