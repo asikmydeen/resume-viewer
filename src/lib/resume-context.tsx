@@ -17,10 +17,9 @@ const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
 
 export function ResumeProvider({ children }: { children: React.ReactNode }) {
   const [resume, setResume] = useState<Resume>(defaultResume);
-  const [autoRefresh, setAutoRefresh] = useState(true); // Changed to true by default
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(false);
 
-  // Load resume from localStorage on mount, or generate random if none exists
+  // Load resume from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem("resume");
     const autoRefreshStored = localStorage.getItem("autoRefresh");
@@ -30,41 +29,26 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
         setResume(JSON.parse(stored));
       } catch (error) {
         console.error("Failed to parse stored resume:", error);
-        // If parsing fails, generate random data
-        const newResume = generateFakeResume();
-        setResume(newResume);
-        localStorage.setItem("resume", JSON.stringify(newResume));
       }
-    } else {
-      // No stored resume, generate random data on first load
-      const newResume = generateFakeResume();
-      setResume(newResume);
-      localStorage.setItem("resume", JSON.stringify(newResume));
     }
     
-    // Set auto-refresh preference (default to true if not set)
-    if (autoRefreshStored === "false") {
-      setAutoRefresh(false);
-    } else {
+    if (autoRefreshStored === "true") {
       setAutoRefresh(true);
-      localStorage.setItem("autoRefresh", "true");
     }
-    
-    setIsInitialized(true);
   }, []);
 
-  // Auto-refresh every 5 minutes (300000ms) when enabled
+  // Auto-refresh every 10 seconds when enabled
   useEffect(() => {
-    if (!autoRefresh || !isInitialized) return;
+    if (!autoRefresh) return;
 
     const interval = setInterval(() => {
       const newResume = generateFakeResume();
       setResume(newResume);
       localStorage.setItem("resume", JSON.stringify(newResume));
-    }, 300000); // 5 minutes = 300000ms
+    }, 10000);
 
     return () => clearInterval(interval);
-  }, [autoRefresh, isInitialized]);
+  }, [autoRefresh]);
 
   const updateResume = (newResume: Resume) => {
     setResume(newResume);
