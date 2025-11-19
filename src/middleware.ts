@@ -8,6 +8,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/public(.*)"
 ]);
 
+// Explicitly typing auth as any to prevent TS error if types are missing during install
 export default clerkMiddleware(async (auth: any, req: NextRequest) => {
   const url = req.nextUrl;
   const hostname = req.headers.get("host") || "";
